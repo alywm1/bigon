@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wheel of Fortune</title>
+    <style>
+        /* Your CSS styles */
+        body {
+            background-image: url('https://www3.0zz0.com/2024/05/20/12/446693062.jpg');
+            background-size: cover;
+            background-position: center;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            margin: 0;
+        }
+        #wheel {
+            width: 200px;
+            height: 200px;
+            background-image: radial-gradient(circle at 50% 50%, #ff6347 0%, #ff6347 25%, #add8e6 25%, #add8e6 50%, #8b4513 50%, #8b4513 75%, #228b22 75%, #228b22 100%);
+            background-size: 100% 100%;
+            border-radius: 50%;
+            position: relative;
+            animation: rotateWheel 2s linear infinite paused;
+            margin-top: 99px;
+        }
+        #arrow {
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 20px solid green;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(90deg);
+            z-index: 2;
+        }
+        .rectangle {
+            position: absolute;
+            width: 50px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .num1 {
+            top: 10%;
+            left: 45%;
+            background-color: red;
+        }
+        .num2 {
+            top: 45%;
+            left: 80%;
+            background-color: yellow;
+        }
+        .num3 {
+            top: 80%;
+            left: 45%;
+            background-color: purple;
+        }
+        .num4 {
+            top: 45%;
+            left: 10%;
+            background-color: orange;
+        }
+        .gold-circle {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: gold;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        .circle1 {
+            top: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .circle2 {
+            top: 70%;
+            left: 80%;
+            transform: translateX(-50%);
+        }
+        .circle3 {
+            top: 70%;
+            left: 20%;
+            transform: translateX(-50%);
+        }
+        .header-text {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #D2B48C;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        @keyframes rotateWheel {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .score-box {
+            position: fixed;
+            top: 0;
+            right: 0;
+            background-color: orange;
+            color: black;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 25px;
+            margin: 10px;
+        }
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: green;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+        .popup p {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div id="menu" style="position: fixed; left: 0; top: 0; background-color: #fff; padding: 10px;">
+    <div>
+        <button onclick="withdraw()" id="withdrawButton">انسحاب</button>
+        <button onclick="share()">مشاركة</button>
+        <button onclick="support()">الدعم</button>
+        <button onclick="logout()">تسجيل الخروج</button>
+    </div>
+</div>
+
+<div class="header-text">كسب شدادات ببجي</div>
+
+<div id="wheel" onclick="spinWheel()">
+    <div id="arrow"></div>
+    <div class="rectangle num1">10</div>
+    <div class="rectangle num2">5</div>
+    <div class="rectangle num3">15</div>
+    <div class="rectangle num4">20</div>
+
+    <div class="gold-circle circle1"></div>
+    <div class="gold-circle circle2"></div>
+    <div class="gold-circle circle3"></div>
+</div>
+
+<div class="score-box">
+    <span style="color: green; font-weight: bold;">النقاط: </span><span id="scoreValue" style="font-weight: bold;">0</span>
+</div>
+
+<div class="popup" id="popup">
+    <p>مبروك! لقد ربحت 10 شدادات ببجي</p>
+</div>
+
+<script>
+    let score = 0;
+    let wheelSpinning = false;
+    let friendsShared = 0;
+
+    // استرجاع النقاط عند تحميل الصفحة
+    window.onload = function() {
+        fetch('get_points.php')
+        .then(response => response.json())
+        .then(data => {
+            score = data.points;
+            updateScore();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    };
+
+    function spinWheel() {
+        if (!wheelSpinning) {
+            wheelSpinning = true;
+            score += 10;
+            updateScore();
+            document.getElementById("wheel").style.animation = "rotateWheel 0.5s linear infinite";
+            setTimeout(() => {
+                wheelSpinning = false;
+                document.getElementById("wheel").style.animation = "rotateWheel 2s linear infinite paused";
+                document.getElementById("popup").style.display = "block";
+                setTimeout(() => {
+                    document.getElementById("popup").style.display = "none";
+                }, 2000);
+            }, 7000);
+        }
+    }
+
+    function updateScore() {
+        document.getElementById("scoreValue").innerText = score;
+        savePointsToDatabase(score);
+    }
+
+    function savePointsToDatabase(points) {
+        fetch('save_points.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ points: points })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    }
+
+    function withdraw() {
+        if (score >= 10000 && friendsShared >= 5) {
+            document.getElementById("withdrawButton").disabled = true;
+            document.getElementById("withdrawButton").innerText = "جارٍ الانسحاب...";
+            setTimeout(() => {
+                document.getElementById("withdrawButton").innerText = "تم الانسحاب";
+                document.getElementById("withdrawButton").disabled = false;
+            }, 2000);
+            alert("تم الانسحاب بنجاح!");
+        } else {
+            alert("الشروط غير مستوفاة:\n\n- الحد الأدنى للسحب: 10000 نقطة\n- مشاركة الرابط مع 5 من الأصدقاء");
+        }
+    }
+
+    function share() {
+        friendsShared += 1;
+        let referralLink = "https://yourwebsite.com?ref=" + friendsShared;
+        alert("تمت مشاركة الرابط مع صديق! رابط الإحالة: " + referralLink);
+    }
+
+    function support() {
+        let telegramLink = "https://t.me/yourtelegramlink";
+        window.location.href = telegramLink;
+    }
+
+    function logout() {
+        fetch('logout.php')
+        .then(() => {
+            window.location.href = 'index.html';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+</script>
+
+</body>
+</html>
